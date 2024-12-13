@@ -1,5 +1,8 @@
 # workerpool
 
+[![Go](https://github.com/oseau/workerpool/actions/workflows/codecov.yml/badge.svg)](https://github.com/oseau/workerpool/actions/workflows/codecov.yml)
+[![codecov](https://codecov.io/gh/oseau/workerpool/branch/main/graph/badge.svg)](https://codecov.io/gh/oseau/workerpool)
+
 workerpool is a simple and efficient worker pool implementation in Go.
 
 ## Installation
