@@ -1,5 +1,8 @@
 # workerpool
 
+[![en](https://img.shields.io/badge/lang-en-blue.svg)](https://github.com/oseau/workerpool/blob/main/README.md)
+[![zh-Hans](https://img.shields.io/badge/lang-zh--Hans-blue.svg)](https://github.com/oseau/workerpool/blob/main/README.zh-Hans.md)
+
 [![Go](https://github.com/oseau/workerpool/actions/workflows/codecov.yml/badge.svg)](https://github.com/oseau/workerpool/actions/workflows/codecov.yml)
 [![codecov](https://codecov.io/gh/oseau/workerpool/branch/main/graph/badge.svg)](https://codecov.io/gh/oseau/workerpool)
 
