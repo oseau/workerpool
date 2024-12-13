@@ -138,3 +138,9 @@ tags
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,linux,emacs,vim,visualstudiocode
+
+# Coverage files
+.coverage.*
+
+# Environment files
+.env
