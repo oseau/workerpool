@@ -6,25 +6,10 @@ import (
 	"testing"
 )
 
-// Basic worker pool with unbuffered channel
-func unbufferedPool(numWorkers int, tasks chan func() error) {
+// Basic worker pool with buffered/unbuffered channel
+func workerPoolToTestAgainst(numWorkers int, tasks chan func() error) {
 	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for task := range tasks {
-				task()
-			}
-		}()
-	}
-	wg.Wait()
-}
-
-// Basic worker pool with buffered channel
-func bufferedPool(numWorkers int, tasks chan func() error) {
-	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
+	for range numWorkers {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -51,7 +36,7 @@ func BenchmarkComparison(b *testing.B) {
 	for _, s := range scenarios {
 		b.Run(s.name, func(b *testing.B) {
 			// Our implementation
-			b.Run("workerpool", func(b *testing.B) {
+			b.Run("workerpool only exec", func(b *testing.B) {
 				p := New(
 					WithPoolSize(s.poolSize),
 					WithQueueSize(s.queueSize),
@@ -63,10 +48,31 @@ func BenchmarkComparison(b *testing.B) {
 					atomic.AddInt32(&counter, 1)
 					return nil
 				})
+				for range b.N {
+					for range s.numTasks {
+						if err := p.Add(task); err != nil {
+							b.Fatal(err)
+						}
+					}
+					p.Wait()
+				}
+			})
 
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
-					for j := 0; j < s.numTasks; j++ {
+			// Our implementation
+			b.Run("workerpool", func(b *testing.B) {
+				for range b.N {
+					p := New(
+						WithPoolSize(s.poolSize),
+						WithQueueSize(s.queueSize),
+					)
+					defer p.Stop()
+
+					var counter int32
+					task := newTestTask(func() error {
+						atomic.AddInt32(&counter, 1)
+						return nil
+					})
+					for range s.numTasks {
 						if err := p.Add(task); err != nil {
 							b.Fatal(err)
 						}
@@ -77,12 +83,11 @@ func BenchmarkComparison(b *testing.B) {
 
 			// Raw goroutines
 			b.Run("raw_goroutines", func(b *testing.B) {
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
+				for range b.N {
 					var wg sync.WaitGroup
 					var counter int32
 
-					for j := 0; j < s.numTasks; j++ {
+					for range s.numTasks {
 						wg.Add(1)
 						go func() {
 							defer wg.Done()
@@ -95,8 +100,7 @@ func BenchmarkComparison(b *testing.B) {
 
 			// Unbuffered channel pool
 			b.Run("unbuffered_pool", func(b *testing.B) {
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
+				for range b.N {
 					var counter int32
 					tasks := make(chan func() error)
 					var wg sync.WaitGroup
@@ -104,10 +108,10 @@ func BenchmarkComparison(b *testing.B) {
 
 					go func() {
 						defer wg.Done()
-						unbufferedPool(s.poolSize, tasks)
+						workerPoolToTestAgainst(s.poolSize, tasks)
 					}()
 
-					for j := 0; j < s.numTasks; j++ {
+					for range s.numTasks {
 						tasks <- func() error {
 							atomic.AddInt32(&counter, 1)
 							return nil
@@ -120,8 +124,7 @@ func BenchmarkComparison(b *testing.B) {
 
 			// Buffered channel pool
 			b.Run("buffered_pool", func(b *testing.B) {
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
+				for range b.N {
 					var counter int32
 					tasks := make(chan func() error, s.queueSize)
 					var wg sync.WaitGroup
@@ -129,10 +132,10 @@ func BenchmarkComparison(b *testing.B) {
 
 					go func() {
 						defer wg.Done()
-						bufferedPool(s.poolSize, tasks)
+						workerPoolToTestAgainst(s.poolSize, tasks)
 					}()
 
-					for j := 0; j < s.numTasks; j++ {
+					for range s.numTasks {
 						tasks <- func() error {
 							atomic.AddInt32(&counter, 1)
 							return nil

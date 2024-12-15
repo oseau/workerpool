@@ -41,27 +41,30 @@ go get github.com/oseau/workerpool
 goos: linux
 goarch: arm64
 pkg: github.com/oseau/workerpool
-BenchmarkComparison/small_load/workerpool                  88542             13032 ns/op               0 B/op          0 allocs/op
-BenchmarkComparison/small_load/raw_goroutines              43064             28455 ns/op            2420 B/op        102 allocs/op
-BenchmarkComparison/small_load/unbuffered_pool             51405             22967 ns/op            1908 B/op        109 allocs/op
-BenchmarkComparison/small_load/buffered_pool              133652              9249 ns/op            2804 B/op        110 allocs/op
-BenchmarkComparison/medium_load/workerpool                  8749            122386 ns/op               0 B/op          0 allocs/op
-BenchmarkComparison/medium_load/raw_goroutines              4069            293727 ns/op           24020 B/op       1002 allocs/op
-BenchmarkComparison/medium_load/unbuffered_pool             5421            207180 ns/op           16404 B/op       1013 allocs/op
-BenchmarkComparison/medium_load/buffered_pool              16214             73886 ns/op           24596 B/op       1014 allocs/op
-BenchmarkComparison/high_load/workerpool                     991           1213514 ns/op               0 B/op          0 allocs/op
-BenchmarkComparison/high_load/raw_goroutines                 282           3854759 ns/op          240020 B/op      10002 allocs/op
-BenchmarkComparison/high_load/unbuffered_pool                559           2193106 ns/op          160596 B/op      10021 allocs/op
-BenchmarkComparison/high_load/buffered_pool                 1422            826179 ns/op          242516 B/op      10022 allocs/op
+BenchmarkComparison/small_load/workerpool_only_exec                89955             13018 ns/op               0 B/op          0 allocs/op
+BenchmarkComparison/small_load/workerpool                          43704             32827 ns/op            4896 B/op         32 allocs/op
+BenchmarkComparison/small_load/raw_goroutines                      35260             35770 ns/op            2420 B/op        102 allocs/op
+BenchmarkComparison/small_load/unbuffered_pool                     44536             29641 ns/op            1908 B/op        109 allocs/op
+BenchmarkComparison/small_load/buffered_pool                      126960             13456 ns/op            2804 B/op        110 allocs/op
+BenchmarkComparison/medium_load/workerpool_only_exec                8961            121890 ns/op               1 B/op          0 allocs/op
+BenchmarkComparison/medium_load/workerpool                          8308            156800 ns/op           19067 B/op         44 allocs/op
+BenchmarkComparison/medium_load/raw_goroutines                      3288            393416 ns/op           24020 B/op       1002 allocs/op
+BenchmarkComparison/medium_load/unbuffered_pool                     4467            277537 ns/op           16404 B/op       1013 allocs/op
+BenchmarkComparison/medium_load/buffered_pool                      12555             91724 ns/op           24596 B/op       1014 allocs/op
+BenchmarkComparison/high_load/workerpool_only_exec                   984           1213473 ns/op             168 B/op          0 allocs/op
+BenchmarkComparison/high_load/workerpool                             954           1442740 ns/op          168692 B/op         76 allocs/op
+BenchmarkComparison/high_load/raw_goroutines                         324           3961079 ns/op          240020 B/op      10002 allocs/op
+BenchmarkComparison/high_load/unbuffered_pool                        483           2257318 ns/op          160596 B/op      10021 allocs/op
+BenchmarkComparison/high_load/buffered_pool                         1617            870150 ns/op          242516 B/op      10022 allocs/op
 PASS
-ok      github.com/oseau/workerpool     16.415s
+ok      github.com/oseau/workerpool     24.072s
 ```
 
 本次基准测试运行在 MacBook Air M1 上，8GB RAM，使用 [OrbStack](https://www.orbstack.dev/) 作为容器运行时，限制 CPU 为 100% 和可用内存为 1GB。
 
 由于我们的 `workerpool` 实现功能相对简单，如果与其他支持更多功能的库做对比可能得出的结论不具有参考性。因此我们只与原始 goroutines 进行对比，以展示性能差异。
 
-在小型（100 个任务）、中型（1000 个任务）和高负载（10000 个任务）使用场景下，我们的 `workerpool` 实现性能优于 goroutines 和未缓冲 channel，同缓冲 channel 相当。
+本 benchmark 旨在为用户提供一个大致的性能参考。我们的 `workerpool` 在小型（100 个任务）、中型（1000 个任务）和高负载（10000 个任务）使用场景下表现良好，并且随着负载增加，性能提升明显。当负载较小时，它与其他实现性能相当，但在高负载时，它明显优于原始 goroutines 和未缓冲 channel。
 
 ## 错误处理
 
